@@ -1,16 +1,25 @@
 # 🧠 mindscope
 
-**mindscope** is a Python library for analyzing persona data and generating narrative summaries, visual insights, and goal-based inferences. Whether you're designing products, conducting research, or building user-centric systems, `mindscope` helps you uncover meaningful human patterns from raw persona data.
+**mindscope** is a Python library that helps you analyze data **from the perspective of a defined persona** — enabling deeper, goal-aligned insights and decision-making. Instead of generic summaries, `mindscope` tailors its analysis to what *matters* most to your target audience, user type, or stakeholder persona.
 
 ---
 
-## 🚀 Features
+## 🔍 What It Does
 
-* ✅ **Persona Parsing** – Load and structure persona data from JSON, CSV, or Excel
-* 📊 **Visual Insight Generation** – Understand trait distributions, goals, and behavioral patterns
-* 🧠 **Goal-Based Inference Engine** – Predict potential actions, pain points, and motivations
-* 📝 **Narrative Summarization** – Generate clean, human-readable summaries from raw input
-* 🔌 **Plug-and-Play** – Easy integration into data science and product development workflows
+Using a provided **persona profile**, `mindscope` interprets your data with human-like context. It produces:
+
+* 🎯 **Persona-aligned Insights** – What matters most *to this persona* in the dataset?
+* 🧠 **Goal-Based Inference** – How does the data help or hinder the persona’s goals?
+* 📊 **Visual Narratives** – Charts and summaries customized for persona-driven analysis
+* 📝 **Narrative Reports** – Human-readable summaries filtered through persona needs and expectations
+
+---
+
+## 💡 Why Use `mindscope`?
+
+In product design, marketing, UX, and strategy, it’s not just about *what the data says*, but *who you're looking at it for*.
+
+Traditional analysis is one-size-fits-all. `mindscope` makes it personal.
 
 ---
 
@@ -25,68 +34,61 @@ pip install mindscope
 ## 🧪 Quick Start
 
 ```python
-from mindscope import PersonaAnalyzer
+from mindscope import Persona, InsightEngine
 
-# Load persona data
-analyzer = PersonaAnalyzer("data/personas.json")
+# Define the persona
+persona = Persona(
+    name="Eco-conscious Shopper",
+    goals=["Reduce carbon footprint", "Buy sustainable products"],
+    pain_points=["Greenwashing", "Lack of transparency"]
+)
 
-# Generate narrative summary
-summary = analyzer.generate_summary()
+# Analyze external data through the persona lens
+engine = InsightEngine(data_path="data/retail_data.csv", persona=persona)
 
-# Extract insights
-insights = analyzer.extract_insights()
-
-# Generate goal-based inferences
-goals = analyzer.infer_goals()
-
-# Visualize traits
-analyzer.visualize_traits()
+# Generate insights, summaries, and visual reports
+summary = engine.generate_summary()
+insights = engine.generate_insights()
+engine.visualize()
 
 print(summary)
 ```
 
 ---
 
+## 🎯 Use Cases
+
+* **Product & UX Teams** – Evaluate how well your data supports key user personas
+* **Marketing & Campaigns** – Tailor messaging based on persona-focused insights
+* **HR or Learning Platforms** – Align content recommendations with individual or archetype personas
+* **Consulting & Research** – Deliver custom reports for different stakeholder types
+
+---
+
 ## 📁 Supported Input Formats
 
-* JSON (structured persona objects)
-* CSV (flat or column-mapped persona rows)
-* XLSX (Excel format with labeled persona fields)
-
-Custom schema support is also available via configuration.
+* CSV, JSON, XLSX (data files)
+* JSON or Python-defined `Persona` objects
 
 ---
 
-## 💡 Use Cases
+## 🧠 Philosophy
 
-* User research and UX persona development
-* Audience segmentation and marketing insights
-* Intelligent personalization engines
-* Coaching, hiring, or HR tech platforms
-* Educational tools with adaptive learning personas
+> **Context matters.**
+> Data is only meaningful when interpreted through the lens of who it affects.
 
----
-
-## 🔍 Philosophy
-
-> Data about people deserves **more than raw analysis**—it deserves meaning.
-
-**mindscope** goes beyond metrics to understand people’s motivations, behaviors, and goals from structured data, giving teams the insights they need to make informed, human-centric decisions.
+`mindscope` puts the *persona first* — so your insights are targeted, relevant, and human-centric.
 
 ---
 
 ## 📚 Documentation
 
-📖 Full docs coming soon: [https://your-link-here.com](https://your-link-here.com)
-Until then, explore usage examples in the `/examples/` folder.
+📖 Coming soon: [https://your-link-here.com](https://your-link-here.com)  
+Explore usage examples in the `/examples/` folder.
 
 ---
 
 ## 🛠️ License
 
-MIT License.
-Contributions welcome — see `CONTRIBUTING.md`.
-
----
-
-Would you like this README in Markdown file format (`README.md`) or want help setting up your PyPI package structure too?
+MIT License
+Contributions welcome – see `CONTRIBUTING.md`
