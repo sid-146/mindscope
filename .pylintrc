@@ -5,7 +5,7 @@ extension-pkg-whitelist=
 load-plugins=pylint.extensions.docparams
 
 # Files and directories to be skipped
-ignore-patterns=.*_test.py,.*_tests.py
+ignore-patterns=.*_test.py,.*_tests.py,venv,docs
 
 [MESSAGES CONTROL]
 # Disable the following Pylint messages
@@ -55,7 +55,7 @@ additional-builtins=_
 
 [LOGGING]
 # Format style: old (%), new ({}), or fstr
-logging-format-style=fstr
+logging-format-style=new
 
 [SIMILARITIES]
 # Ignore docstrings when checking for similarities
