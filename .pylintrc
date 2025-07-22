@@ -1,0 +1,63 @@
+[MASTER]
+# Python code to be checked
+ignore=tests
+extension-pkg-whitelist=
+load-plugins=pylint.extensions.docparams
+
+# Files and directories to be skipped
+ignore-patterns=.*_test.py,.*_tests.py
+
+[MESSAGES CONTROL]
+# Disable the following Pylint messages
+disable=
+    C0114,  # missing-module-docstring
+    C0115,  # missing-class-docstring
+    C0116,  # missing-function-docstring
+    R0903,  # too-few-public-methods
+    R0913,  # too-many-arguments
+    R0801,  # duplicate-code
+    W1203,  # logging-fstring-interpolation
+
+[REPORTS]
+# Disable the report at the end of the Pylint output
+reports=no
+score=yes
+
+[FORMAT]
+# Maximum number of characters on a single line.
+max-line-length=100
+
+# String used as indentation unit
+indent-string='    '
+
+[TYPECHECK]
+# Context for dynamic imports or stub-less libraries
+ignored-modules=
+    numpy,
+    pandas,
+    matplotlib,
+    sklearn
+
+[DESIGN]
+# Maximum number of arguments for function / method
+max-args=6
+
+# Maximum number of attributes for a class
+max-attributes=10
+
+[IMPORTS]
+# Allow wildcard imports from modules like __init__.py
+allow-wildcard-with-all=yes
+
+[VARIABLES]
+# Additional names considered as constants
+additional-builtins=_
+
+[LOGGING]
+# Format style: old (%), new ({}), or fstr
+logging-format-style=fstr
+
+[SIMILARITIES]
+# Ignore docstrings when checking for similarities
+ignore-docstrings=yes
+min-similarity-lines=4
