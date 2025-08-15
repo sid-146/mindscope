@@ -271,3 +271,94 @@ flowchart TD
     Local + LLM Summaries]
 
 ```
+
+
+## How Categorical Values are identified in side the code
+
+`Todo move this to some where else.`
+
+-----
+
+### 1\. Explicitly Defined `pl.Categorical` Columns
+
+This is the most straightforward case. Polars has a special data type called `pl.Categorical`. It's a highly optimized type for columns that contain a limited number of repeating string values (like "active", "inactive", "pending"). Polars stores these strings only once and uses efficient integers internally to represent them, saving memory and speeding up operations.
+
+**How the code handles it:**
+
+The code directly checks if a column's data type is `pl.Categorical`.
+
+```python
+# From the function:
+elif dtype == pl.Categorical:
+    col_properties = {
+        "identified_type": "categorical",
+        "dtype": str(dtype),
+        "categories": col.unique().sort().to_list(),
+        # ... and other properties
+    }
+```
+
+In our example, the `status` column was created with `dtype=pl.Categorical`, so it's immediately identified correctly without any complex calculations.
+
+-----
+
+### 2\. Inferred Categorical Columns (from Strings)
+
+This is the more interesting part. A column might contain categorical data but be stored as a standard string (`pl.Utf8`). For example, a `country` column with values like "India", "USA", "Germany" is conceptually categorical, but it might just be a string column in the raw data.
+
+The function uses a set of **heuristics** (rules of thumb) to decide if a string column should be treated as categorical. The core idea is that **categorical columns have a low number of unique values relative to the total number of rows.**
+
+The function uses a combination of two rules, and if **either one** is true, the column is classified as categorical.
+
+#### Heuristic 1: The Uniqueness Ratio
+
+This rule checks if the number of unique values is a very small fraction of the total number of rows.
+
+  * **Formula:** $Uniqueness\\ Ratio = \\frac{\\text{Number of Unique Values}}{\\text{Total Number of Rows}}$
+  * **Logic:** If this ratio is very low, it means the values are repeated frequently, which is a strong sign of a categorical feature.
+  * **In the code:** `(n_unique / n_rows) < categorical_threshold`
+      * The `categorical_threshold` defaults to `0.05` (or 5%). You can change this when calling the function.
+
+**Example:** Imagine a DataFrame with **1,000 rows** representing employees. A column named `department` has only **8 unique values** ("Sales", "HR", "Engineering", etc.).
+
+  * Number of Unique Values (`n_unique`): 8
+  * Total Number of Rows (`n_rows`): 1000
+  * Ratio: $8 / 1000 = 0.008$
+
+Since `0.008` is less than the default threshold of `0.05`, this column would be correctly identified as categorical.
+
+#### Heuristic 2: The Absolute Unique Count Limit
+
+This rule acts as a simple cutoff and is especially useful for smaller datasets where the ratio might be misleading.
+
+  * **Formula:** $\\text{Number of Unique Values} \< \\text{Absolute Limit}$
+  * **Logic:** If a column has fewer than a certain number of unique values (e.g., 50), it's very likely to be a set of categories, regardless of how many total rows there are.
+  * **In the code:** `n_unique < categorical_unique_limit`
+      * The `categorical_unique_limit` defaults to `50`.
+
+**Example (using our original sample data):**
+
+Let's look at the `region_code` column.
+
+  * Number of Unique Values (`n_unique`): 3 (namely 'AS-E', 'EU-C', 'US-W')
+  * Total Number of Rows (`n_rows`): 7
+  * Uniqueness Ratio: $3 / 7 \\approx 0.428$
+
+Here, the ratio `0.428` is **not** less than the `0.05` threshold. So, Heuristic 1 fails.
+
+However, we then check Heuristic 2:
+
+  * Is `n_unique` (which is 3) less than the `categorical_unique_limit` (which is 50)?
+  * **Yes, 3 \< 50.**
+
+Because this condition is met, the `region_code` column is correctly classified as categorical.
+
+### Summary of the Logic Flow
+
+For any given string (`pl.Utf8`) column, the process is:
+
+1.  **Count** the number of unique values (`n_unique`).
+2.  **Check Condition 1:** Is the uniqueness ratio (`n_unique / n_rows`) less than the threshold (e.g., 0.05)?
+3.  **Check Condition 2:** Is the unique count (`n_unique`) less than the absolute limit (e.g., 50)?
+4.  If **Condition 1 OR Condition 2** is true, classify the column as **categorical**.
+5.  If both are false, classify it as a general **string** column (like the `description` column in our example).
