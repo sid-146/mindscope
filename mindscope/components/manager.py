@@ -48,6 +48,8 @@ def get_dataframe_from_filepath(filepath: str, encoding: str = "utf-8"):
 class Manager:
     """
     Manager Responsible for execution of different components.
+    Managers handles a single file at a time.
+    Responsible for data loading and checking for empty dataframes.
 
     - Components:
         - Summarizer
