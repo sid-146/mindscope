@@ -1,6 +1,5 @@
 import copy
 import logging
-import random
 
 import polars as pl
 
@@ -176,6 +175,8 @@ class Summarizer:
             ).drop_nulls()
             if parsed_dates.len() / not_null.len() >= self.DATE_LIKE_THRESHOLD:
                 return {
+                    "column": column,
+                    "dtype": str(dtype),
                     "type": "date-like string",
                     "min_date": parsed_dates.min(),
                     "max_date": parsed_dates.max(),
@@ -191,6 +192,7 @@ class Summarizer:
         ) or (n_unique < self.CATEGORICAL_UNIQUE_LIMIT)
         if is_categorical:
             return {
+                "column": column,
                 "type": "categorical string",
                 "dtype": str(dtype),
                 "categories": col.unique().sort().to_list(),
@@ -210,7 +212,9 @@ class Summarizer:
 
     def _handle_other_column(self, column: str, dtype: pl.DataType, col: pl.Series):
         return {
-            "type": f"{dtype}",
+            "column": column,
+            "dtype": str(dtype),
+            "type": "other",
             "null_count": col.null_count(),
             "not_null_count": col.count() - col.null_count(),
         }
