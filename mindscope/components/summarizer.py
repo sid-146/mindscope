@@ -78,148 +78,142 @@ class Summarizer:
         Generate properties for each column in the dataframe.
 
         - Iterate over each column in the dataframe.
-        - If number column, then calculate min, max, mean, median, std.
-        - if string/object column, then check if it is a date column, if not then check if it is categorical. else it is string.
-        - if boolean column.
-        - if column any date type then column of type date.
-        - if type is categorical then categorical.
+        - Delegate handling of each column type to specialized helper methods.
         """
-
-        # Initialize all variables to use
         data = copy.deepcopy(self.data)
         property_list = []
 
         for column in data.columns:
             dtype = data[column].dtype
             col = data[column]
-            # Handling numeric columns
-            properties = {}
-            if dtype.is_numeric():
-                properties = {
-                    "column": column,
-                    "type": "numeric",
-                    "dtype": str(dtype),
-                    "min": col.min(),
-                    "max": col.max(),
-                    "mean": col.mean(),
-                    "median": col.median(),
-                    "std": col.std(),
-                    "null_count": col.null_count(),
-                    "not_null_count": col.count() - col.null_count(),
-                }
-
-            # Handling date/time columns
-            elif dtype.is_temporal():
-                properties = {
-                    "column": column,
-                    "type": "date",
-                    "dtype": str(dtype),
-                    "min_date": col.min(),
-                    "max_date": col.max(),
-                    "null_count": col.null_count(),
-                    "not_null_count": col.count() - col.null_count(),
-                    "min_max_diff": col.max() - col.min(),
-                }
-
-            # Handling boolean columns
-            elif isinstance(dtype, pl.Boolean):
-                properties = {
-                    "column": column,
-                    "type": "boolean",
-                    "dtype": str(dtype),
-                    "true_count": col.sum(),
-                    "false_count": col.count() - col.sum(),
-                    "null_count": col.null_count(),
-                    "not_null_count": col.count() - col.null_count(),
-                }
-
-            # Handling Categories
-            elif isinstance(dtype, pl.Categorical):
-                properties = {
-                    "column": column,
-                    "dtype": str(dtype),
-                    "type": "categorical",
-                    "categories": col.unique().sort().to_list(),
-                    "n_categories": col.n_unique(),
-                    "null_count": col.null_count(),
-                    "not_null_count": col.count() - col.null_count(),
-                }
-
-            # Handling String columns
-            elif isinstance(dtype, pl.Utf8):
-                null_count = col.null_count()
-                not_null = col.drop_nulls()
-                n_unique = col.n_unique()
-
-                # Check if the column is a date column
-                if not_null.len() > 0:
-                    # Try to parse to check date like values; Strict=True to return null on failure
-                    parsed_dates = not_null.str.to_datetime(
-                        format=None,
-                        strict=False,
-                    ).drop_nulls()
-
-                    # Ratio is above then threshold then it can be said as date-like column
-                    if parsed_dates.len() / not_null.len() >= self.DATE_LIKE_THRESHOLD:
-                        properties = {
-                            "type": "date-like string",
-                            "min_date": parsed_dates.min(),
-                            "max_date": parsed_dates.max(),
-                            "null_count": null_count,
-                            "not_null_count": col.count() - null_count,
-                            "min_max_diff": parsed_dates.max() - parsed_dates.min(),
-                            "parsed_success_rete": parsed_dates.len() / not_null.len(),
-                        }
-
-                    else:  # Not a date-like string
-                        pass  # Check if it is categorical
-
-                # Check if it is categorical
-                # Todo: This logic can be improved
-                if not properties:
-                    is_categorical = (
-                        self.N_ROWS > 0  # There should at least one row
-                        and (n_unique / self.N_ROWS)
-                        < self.CATEGORICAL_THRESHOLD  # if unique values are less than threshold then they are not considered as categorical
-                    ) or (
-                        n_unique < self.CATEGORICAL_UNIQUE_LIMIT
-                    )  # Max unique values limit
-                    if is_categorical:
-                        properties = {
-                            "type": "categorical string",
-                            "dtype": str(dtype),
-                            "categories": col.unique().sort().to_list(),
-                            "n_categories": n_unique,
-                            "null_count": null_count,
-                            "not_null_count": col.count() - null_count,
-                        }
-                    else:
-                        # String Column
-                        properties = {
-                            "type": "string",
-                            "dtype": str(dtype),
-                            "null_count": null_count,
-                            "not_null_count": col.count() - null_count,
-                            "n_unique": n_unique,
-                        }
-
-            # Handling other types
-            else:
-                properties = {"type": f"{dtype}"}
-                properties.update(
-                    {
-                        "null_count": col.null_count(),
-                        "not_null_count": col.count() - col.null_count(),
-                    }
-                )
-
-            samples = random.sample(
-                col.unique().to_list(), k=min(n_samples, len(col.unique()))
+            properties = self._handle_column(column, dtype, col)
+            samples: pl.Series = col.sample(
+                n_samples,
+                with_replacement=False,
+                shuffle=True,
             )
-            properties["samples"] = samples
+            properties["samples"] = samples.to_list()
             property_list.append(properties)
 
         return property_list
+
+    def _handle_column(self, column: str, dtype: pl.DataType, col: pl.Series):
+        """
+        Handle a single column based on its type.
+        """
+        if dtype.is_numeric():
+            return self._handle_numeric_column(column, dtype, col)
+        elif dtype.is_temporal():
+            return self._handle_temporal_column(column, dtype, col)
+        elif isinstance(dtype, pl.Boolean):
+            return self._handle_boolean_column(column, dtype, col)
+        elif isinstance(dtype, pl.Categorical):
+            return self._handle_categorical_column(column, dtype, col)
+        elif isinstance(dtype, pl.Utf8):
+            return self._handle_string_column(column, dtype, col)
+        else:
+            return self._handle_other_column(column, dtype, col)
+
+    def _handle_numeric_column(self, column: str, dtype: pl.DataType, col: pl.Series):
+        return {
+            "column": column,
+            "type": "numeric",
+            "dtype": str(dtype),
+            "min": col.min(),
+            "max": col.max(),
+            "mean": col.mean(),
+            "median": col.median(),
+            "std": col.std(),
+            "null_count": col.null_count(),
+            "not_null_count": col.count() - col.null_count(),
+        }
+
+    def _handle_temporal_column(self, column: str, dtype: pl.DataType, col: pl.Series):
+        return {
+            "column": column,
+            "type": "date",
+            "dtype": str(dtype),
+            "min_date": col.min(),
+            "max_date": col.max(),
+            "null_count": col.null_count(),
+            "not_null_count": col.count() - col.null_count(),
+            "min_max_diff": col.max() - col.min(),
+        }
+
+    def _handle_boolean_column(self, column: str, dtype: pl.DataType, col: pl.Series):
+        return {
+            "column": column,
+            "type": "boolean",
+            "dtype": str(dtype),
+            "true_count": col.sum(),
+            "false_count": col.count() - col.sum(),
+            "null_count": col.null_count(),
+            "not_null_count": col.count() - col.null_count(),
+        }
+
+    def _handle_categorical_column(
+        self, column: str, dtype: pl.DataType, col: pl.Series
+    ):
+        return {
+            "column": column,
+            "dtype": str(dtype),
+            "type": "categorical",
+            "categories": col.unique().sort().to_list(),
+            "n_categories": col.n_unique(),
+            "null_count": col.null_count(),
+            "not_null_count": col.count() - col.null_count(),
+        }
+
+    def _handle_string_column(self, column: str, dtype: pl.DataType, col: pl.Series):
+        null_count = col.null_count()
+        not_null = col.drop_nulls()
+        n_unique = col.n_unique()
+
+        # Check if the column is a date column
+        if not_null.len() > 0:
+            parsed_dates = not_null.str.to_datetime(
+                format=None, strict=False
+            ).drop_nulls()
+            if parsed_dates.len() / not_null.len() >= self.DATE_LIKE_THRESHOLD:
+                return {
+                    "type": "date-like string",
+                    "min_date": parsed_dates.min(),
+                    "max_date": parsed_dates.max(),
+                    "null_count": null_count,
+                    "not_null_count": col.count() - null_count,
+                    "min_max_diff": parsed_dates.max() - parsed_dates.min(),
+                    "parsed_success_rate": parsed_dates.len() / not_null.len(),
+                }
+
+        # Check if it is categorical
+        is_categorical = (
+            self.N_ROWS > 0 and (n_unique / self.N_ROWS) < self.CATEGORICAL_THRESHOLD
+        ) or (n_unique < self.CATEGORICAL_UNIQUE_LIMIT)
+        if is_categorical:
+            return {
+                "type": "categorical string",
+                "dtype": str(dtype),
+                "categories": col.unique().sort().to_list(),
+                "n_categories": n_unique,
+                "null_count": null_count,
+                "not_null_count": col.count() - null_count,
+            }
+
+        # String Column
+        return {
+            "type": "string",
+            "dtype": str(dtype),
+            "null_count": null_count,
+            "not_null_count": col.count() - null_count,
+            "n_unique": n_unique,
+        }
+
+    def _handle_other_column(self, column: str, dtype: pl.DataType, col: pl.Series):
+        return {
+            "type": f"{dtype}",
+            "null_count": col.null_count(),
+            "not_null_count": col.count() - col.null_count(),
+        }
 
     def _enrich(self, summary: dict):
         """
