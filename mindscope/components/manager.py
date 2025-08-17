@@ -1,12 +1,12 @@
 import os
 from typing import Callable, Dict, Hashable
 
-import pandas as pd
+import polars as pl
 from llmx import TextGenerator, llm
 
 # types
-LoaderDict = Dict[Hashable, Callable[[], pd.DataFrame]]
-EMPTY_DF = pd.DataFrame()
+LoaderDict = Dict[Hashable, Callable[[], pl.DataFrame]]
+EMPTY_DF = pl.DataFrame()
 
 
 # Errors
@@ -20,11 +20,11 @@ def get_dataframe_from_filepath(filepath: str, encoding: str = "utf-8"):
 
     extn = filepath.split(".")[-1]
     mapping: LoaderDict = {
-        "csv": lambda: pd.read_csv(filepath, encoding=encoding),
-        "xlsx": lambda: pd.read_excel(filepath, encoding=encoding),
-        "xls": lambda: pd.read_excel(filepath, encoding=encoding),
-        "parquet": lambda: pd.read_parquet(filepath),
-        "json": lambda: pd.read_json(filepath, orient="records", encoding=encoding),
+        "csv": lambda: pl.read_csv(filepath, encoding=encoding),
+        "xlsx": lambda: pl.read_excel(filepath, encoding=encoding),
+        "xls": lambda: pl.read_excel(filepath, encoding=encoding),
+        "parquet": lambda: pl.read_parquet(filepath),
+        "json": lambda: pl.read_json(filepath, orient="records", encoding=encoding),
     }
 
     if extn not in mapping:
@@ -34,13 +34,13 @@ def get_dataframe_from_filepath(filepath: str, encoding: str = "utf-8"):
         )
 
     try:
-        df: pd.DataFrame = mapping[extn]()
+        df: pl.DataFrame = mapping[extn]()
     except Exception as e:
         message = f"Not able to read file : {e.__class__} : {e}"
         raise FileReadError(message)
 
     if df.empty:
-        raise pd.errors.EmptyDataError("File loaded but no data found.")
+        raise pl.errors.EmptyDataError("File loaded but no data found.")
 
     return df
 
@@ -57,7 +57,7 @@ class Manager:
 
     def __init__(
         self,
-        data: pd.DataFrame = EMPTY_DF,
+        data: pl.DataFrame = EMPTY_DF,
         filepath: str = "",
         text_generator: TextGenerator = None,
     ):
@@ -66,7 +66,7 @@ class Manager:
 
         Requires tabular format for now.
         """
-        if isinstance(data, pd.DataFrame) and not data.empty:
+        if isinstance(data, pl.DataFrame) and not data.empty:
             self.data = data
         elif filepath:
             self.data = get_dataframe_from_filepath(filepath)

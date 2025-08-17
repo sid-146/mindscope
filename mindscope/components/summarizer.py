@@ -164,44 +164,102 @@ class Summarizer:
         }
 
     def _handle_string_column(self, column: str, dtype: pl.DataType, col: pl.Series):
+        logger.debug(f"Handling string column: {column} : {dtype}")
+        logger.debug(f"Column data: {col}")
         null_count = col.null_count()
         not_null = col.drop_nulls()
         n_unique = col.n_unique()
 
         # Check if the column is a date column
-        if not_null.len() > 0:
-            parsed_dates = not_null.str.to_datetime(
-                format=None, strict=False
-            ).drop_nulls()
-            if parsed_dates.len() / not_null.len() >= self.DATE_LIKE_THRESHOLD:
-                return {
-                    "column": column,
-                    "dtype": str(dtype),
-                    "type": "date-like string",
-                    "min_date": parsed_dates.min(),
-                    "max_date": parsed_dates.max(),
-                    "null_count": null_count,
-                    "not_null_count": col.count() - null_count,
-                    "min_max_diff": parsed_dates.max() - parsed_dates.min(),
-                    "parsed_success_rate": parsed_dates.len() / not_null.len(),
-                }
+        date_properties = self._try_parse_dates(
+            column,
+            dtype,
+            col,
+            not_null,
+            null_count,
+        )
+        if date_properties:
+            return date_properties
 
         # Check if it is categorical
-        is_categorical = (
-            self.N_ROWS > 0 and (n_unique / self.N_ROWS) < self.CATEGORICAL_THRESHOLD
-        ) or (n_unique < self.CATEGORICAL_UNIQUE_LIMIT)
-        if is_categorical:
-            return {
-                "column": column,
-                "type": "categorical string",
-                "dtype": str(dtype),
-                "categories": col.unique().sort().to_list(),
-                "n_categories": n_unique,
-                "null_count": null_count,
-                "not_null_count": col.count() - null_count,
-            }
+        if self._is_categorical(n_unique):
+            return self._categorical_string_properties(
+                column, dtype, col, n_unique, null_count
+            )
 
         # String Column
+        return self._generic_string_properties(dtype, col, n_unique, null_count)
+
+    def _try_parse_dates(
+        self,
+        column: str,
+        dtype: pl.DataType,
+        col: pl.Series,
+        not_null: pl.Series,
+        null_count: int,
+    ):
+        if not_null.len() > 0:
+            try:
+                logger.debug(f"Attempting to parse dates in column {column}")
+                logger.debug(f"Sample values: {not_null.head(5)}")
+                parsed_dates = self._parse_dates(not_null)
+                if (
+                    parsed_dates
+                    and parsed_dates.len() > 0
+                    and parsed_dates.len() / not_null.len() >= self.DATE_LIKE_THRESHOLD
+                ):
+                    return {
+                        "column": column,
+                        "dtype": str(dtype),
+                        "type": "date-like string",
+                        "min_date": parsed_dates.min(),
+                        "max_date": parsed_dates.max(),
+                        "null_count": null_count,
+                        "not_null_count": col.count() - null_count,
+                        "min_max_diff": parsed_dates.max() - parsed_dates.min(),
+                        "parsed_success_rate": parsed_dates.len() / not_null.len(),
+                    }
+            except Exception as e:
+                logger.debug(f"Failed to parse dates in column {column}: {str(e)}")
+        return None
+
+    def _parse_dates(self, not_null: pl.Series):
+        common_formats = ["%Y-%m-%d", "%d-%m-%Y", "%Y/%m/%d", "%d/%m/%Y"]
+        for fmt in common_formats:
+            try:
+                parsed_dates = not_null.str.to_datetime(fmt, strict=False).drop_nulls()
+                if parsed_dates.len() > 0:
+                    return parsed_dates
+            except Exception:
+                continue
+        return not_null.str.to_datetime(
+            format=None, strict=False, ambiguous="earliest", cache=False
+        ).drop_nulls()
+
+    def _is_categorical(self, n_unique):
+        return (
+            self.N_ROWS > 0 and (n_unique / self.N_ROWS) < self.CATEGORICAL_THRESHOLD
+        ) or (n_unique < self.CATEGORICAL_UNIQUE_LIMIT)
+
+    def _categorical_string_properties(
+        self,
+        column: str,
+        dtype: pl.DataType,
+        col: pl.Series,
+        n_unique: int,
+        null_count: int,
+    ):
+        return {
+            "column": column,
+            "type": "categorical string",
+            "dtype": str(dtype),
+            "categories": col.unique().sort().to_list(),
+            "n_categories": n_unique,
+            "null_count": null_count,
+            "not_null_count": col.count() - null_count,
+        }
+
+    def _generic_string_properties(self, dtype, col, n_unique, null_count):
         return {
             "type": "string",
             "dtype": str(dtype),
@@ -225,13 +283,13 @@ class Summarizer:
         """
         pass
 
-    def summarize(self, enrich: bool = False):
+    def summarize(self, enrich: bool = False, n_samples: int = 3):
         """
         Generate a summary of the dataframe.
         Read docs/summarizer.md for more details on the summary format.
         """
         summary: dict = copy.deepcopy(self.summary)
-        column_properties = self._columns_properties()
+        column_properties = self._columns_properties(n_samples=n_samples)
 
         if "columns" not in summary:
             summary["columns"] = column_properties
