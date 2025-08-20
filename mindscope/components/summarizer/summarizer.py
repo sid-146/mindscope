@@ -9,13 +9,15 @@ logger = logging.getLogger(__name__)
 
 
 class Summarizer:
+    # Todo: Should be move the data into a new class named Dataset.
     def __init__(self, data: pl.DataFrame, filename: str = ""):
         """
         Initialize the summarizer with a polars dataframe.
         """
         self.summary: dict = {
             "filename": filename,
-            "name": filename,
+            "name": "", # Dataset name should be given by LLM maximum 3 word if not given by user.
+            "description":"", # LLM should generate this if not given by user.
         }
         self.data = data
         self.N_ROWS: int = self.data.height
