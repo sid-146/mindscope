@@ -10,7 +10,7 @@ flowchart TD
     B --> F[Visualizer]
     F --> G[Executer]
     G -->|Return Figures/Reports| B
-    B --> H[Output: persona-aligned insights + visual narratives]
+    B --> H[Output: persona-aligned insights \n visual narratives]
 
 ```
 
@@ -67,18 +67,31 @@ flowchart TD
 ## 📊 Example Package Interaction (Persona-based Analysis)
 
 ```python
-from mindscope import MindscopeManager
+from mindscope import Manager
 import polars as pl
 
 df = pl.read_csv("sales.csv")
 
-ms = MindscopeManager(persona="CXO")
-result = ms.analyze(df)
-
-# result = {
-#   "summary": {...},
-#   "persona_goals": {...},
-#   "visualizations": [fig1, fig2],
-#   "narrative": "Revenue growth is driven by..."
-# }
+manager = Manager(persona="CXO")
+result = ms.summarize(df, enrich = True) # summarizes dataset
 ```
+
+## Sample Output of summarizer function
+```bash
+{
+    "filename": filename,
+    "name": "mydataset", 
+    "description":"this is a sample description for mydataset.",
+    "columns":[
+        {
+            "column_name":"col1",
+            ...
+        },
+        {
+            "column_name":"col1",
+            ...
+        }
+    ]
+}
+```
+
