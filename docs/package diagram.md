@@ -79,7 +79,7 @@ result = ms.summarize(df, enrich = True) # summarizes dataset
 ## Sample Output of summarizer function
 ```bash
 {
-    "filename": filename,
+    "filename": dataset.csv,
     "name": "mydataset", 
     "description":"this is a sample description for mydataset.",
     "columns":[
