@@ -16,8 +16,8 @@ class Summarizer:
         """
         self.summary: dict = {
             "filename": filename,
-            "name": "", # Dataset name should be given by LLM maximum 3 word if not given by user.
-            "description":"", # LLM should generate this if not given by user.
+            "name": "",  # Dataset name should be given by LLM maximum 3 word if not given by user.
+            "description": "",  # LLM should generate this if not given by user.
         }
         self.data = data
         self.N_ROWS: int = self.data.height

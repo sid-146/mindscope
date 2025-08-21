@@ -2,7 +2,8 @@ import os
 from typing import Callable, Dict, Hashable
 
 import polars as pl
-from llmx import TextGenerator, llm
+
+# from llmx import TextGenerator, llm
 
 # types
 LoaderDict = Dict[Hashable, Callable[[], pl.DataFrame]]
@@ -59,7 +60,7 @@ class Manager:
         self,
         data: pl.DataFrame = EMPTY_DF,
         filepath: str = "",
-        text_generator: TextGenerator = None,
+        # text_generator: TextGenerator = None,
     ):
         """
         Takes dataframe or file_path as argument if both given then dataframe will be prioritized.
