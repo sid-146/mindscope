@@ -1,9 +1,10 @@
 from .openai import OpenAIClient
 
 
-def llm(provider: str):
+def llm(provider: str, **kwargs):
     if provider.lower() == "openai":
-        client = OpenAIClient()
+        # fix this they all should either given generation config or kwargs
+        client = OpenAIClient(provider=provider, **kwargs)
         return client
     else:
         raise ValueError("Provider not supported.")
