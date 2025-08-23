@@ -1,3 +1,9 @@
+"""
+Todo:
+    - Update file structure
+    - move non class functions to their correct position
+"""
+
 import os
 from typing import Callable, Dict, Hashable
 
