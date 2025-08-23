@@ -1,3 +1,3 @@
-from .datamodels import GenerationConfig, Message
+from .datamodels import GenerationConfig, Message, LLMResponse
 
-__all__ = ["GenerationConfig", "Message"]
+__all__ = ["GenerationConfig", "Message", "LLMResponse"]
