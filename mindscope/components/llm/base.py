@@ -2,8 +2,9 @@ from abc import ABC, abstractmethod
 
 
 class BaseLLM(ABC):
-    def __init__(self):
-        pass
+    def __init__(self, provider: str = "openai", **kwargs):
+        self.provider = provider
+        self.model_name = kwargs.get("model_name", "gpt-3.5-turbo")
 
     @abstractmethod
     def chat():
