@@ -3,16 +3,15 @@ from abc import ABC, abstractmethod
 
 class BaseLLM(ABC):
     def __init__(self):
-        return
+        pass
 
     @abstractmethod
     def chat():
         raise NotImplementedError("Base class should implement this method.")
 
     @abstractmethod
-    def embed():
+    def generate_text():
         raise NotImplementedError("Base class should implement this method.")
 
-    @abstractmethod
-    def generate_text():
+    def embed():
         raise NotImplementedError("Base class should implement this method.")
