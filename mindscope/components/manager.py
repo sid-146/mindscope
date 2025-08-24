@@ -4,56 +4,21 @@ Todo:
     - move non class functions to their correct position
 """
 
-import os
-from typing import Callable, Dict, Hashable
+import polars as pl
 
-import pandas as pd
-from llmx import TextGenerator, llm
-
-# types
-LoaderDict = Dict[Hashable, Callable[[], pd.DataFrame]]
-EMPTY_DF = pd.DataFrame()
+from .core import EMPTY_DF
+from .utils.manager import get_dataframe_from_filepath
+from .summarizer import Summarizer
 
 
 # Errors
-class FileReadError(BaseException):
-    pass
-
-
-def get_dataframe_from_filepath(filepath: str, encoding: str = "utf-8"):
-    if not os.path.exists(filepath):
-        raise FileNotFoundError("Given file not found..")
-
-    extn = filepath.split(".")[-1]
-    mapping: LoaderDict = {
-        "csv": lambda: pd.read_csv(filepath, encoding=encoding),
-        "xlsx": lambda: pd.read_excel(filepath, encoding=encoding),
-        "xls": lambda: pd.read_excel(filepath, encoding=encoding),
-        "parquet": lambda: pd.read_parquet(filepath),
-        "json": lambda: pd.read_json(filepath, orient="records", encoding=encoding),
-    }
-
-    if extn not in mapping:
-        raise KeyError(
-            f"Given extension {extn} not in mapping \
-            available extensions are : {list(mapping.keys())}"
-        )
-
-    try:
-        df: pd.DataFrame = mapping[extn]()
-    except Exception as e:
-        message = f"Not able to read file : {e.__class__} : {e}"
-        raise FileReadError(message)
-
-    if df.empty:
-        raise pd.errors.EmptyDataError("File loaded but no data found.")
-
-    return df
 
 
 class Manager:
     """
     Manager Responsible for execution of different components.
+    Managers handles a single file at a time.
+    Responsible for data loading and checking for empty dataframes.
 
     - Components:
         - Summarizer
@@ -61,19 +26,48 @@ class Manager:
 
     def __init__(
         self,
-        data: pd.DataFrame = EMPTY_DF,
+        data: pl.DataFrame = EMPTY_DF,
         filepath: str = "",
-        text_generator: TextGenerator = None,
+        # text_generator: TextGenerator = None,
     ):
         """
         Takes dataframe or file_path as argument if both given then dataframe will be prioritized.
 
         Requires tabular format for now.
         """
-        if isinstance(data, pd.DataFrame) and not data.empty:
-            self.data = data
+        if isinstance(data, pl.DataFrame):
+            self._data = data
         elif filepath:
-            self.data = get_dataframe_from_filepath(filepath)
-            self.filepath = filepath
+            self._data = get_dataframe_from_filepath(filepath)
+            self._filepath = filepath
         else:
             raise ValueError("Either data or filepath must be provided.")
+        self._data = data
+        self._filepath = filepath
+        self.summarizer: Summarizer = None
+
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, value):
+        self._data = value
+
+    def summarize(self, n_samples=5, enrich=False):
+        """
+        Docstring will go here
+
+        :param: enrich
+        bool : Set true to use it for
+
+        """
+        if self.data.is_empty():
+            raise ValueError(
+                "Please provider data to summarize. Assign Manager a dataset."
+            )
+        if not self.summarizer:
+            self.summarizer = Summarizer(self.data)
+
+        summary = self.summarizer.summarize(n_samples=n_samples, enrich=enrich)
+        return summary

@@ -1,0 +1,94 @@
+{
+    "filename": "",
+    "name": "",
+    "description": "This dataset contains information about various products, including their identifiers, pricing, availability, launch dates, last order dates, and current status.",
+    "columns": [
+        {
+            "column": "product_id",
+            "type": "numeric",
+            "dtype": "Int64",
+            "min": 1000,
+            "max": 1999,
+            "mean": 1499.5,
+            "median": 1499.5,
+            "std": 288.8194360957494,
+            "null_count": 0,
+            "not_null_count": 1000,
+            "samples": [1411, 1602, 1585, 1924, 1454, 1056, 1343, 1559, 1949, 1416],
+            "summary": "The product_id is a numeric identifier for each product, ranging from 1000 to 1999, with a mean value of 1499.5."
+        },
+        {
+            "column": "price",
+            "type": "numeric",
+            "dtype": "Float64",
+            "min": 5.44,
+            "max": 99.97,
+            "mean": 51.57424,
+            "median": 52.195,
+            "std": 27.75315905369801,
+            "null_count": 0,
+            "not_null_count": 1000,
+            "samples": [28.92, 19.24, 18.31, 93.76, 86.27, 6.75, 82.23, 17.11, 55.55, 14.64],
+            "summary": "The price of products varies from 5.44 to 99.97, with an average price of approximately 51.57."
+        },
+        {
+            "column": "category",
+            "type": "categorical string",
+            "dtype": "String",
+            "categories": ["A", "B", "C", "D"],
+            "n_categories": 4,
+            "null_count": 0,
+            "not_null_count": 1000,
+            "samples": ["C", "A", "D", "B", "C", "B", "A", "C", "B", "B"],
+            "summary": "Products are categorized into four distinct categories: A, B, C, and D."
+        },
+        {
+            "column": "in_stock",
+            "type": "boolean",
+            "dtype": "Boolean",
+            "true_count": 476,
+            "false_count": 524,
+            "null_count": 0,
+            "not_null_count": 1000,
+            "samples": [true, true, false, true, false, true, true, true, true, false],
+            "summary": "The in_stock column indicates product availability, with 476 products currently in stock and 524 out of stock."
+        },
+        {
+            "column": "launch_date",
+            "dtype": "String",
+            "type": "date-like string",
+            "min_date": "2020-01-01T00:00:00",
+            "max_date": "2025-06-22T00:00:00",
+            "null_count": 0,
+            "not_null_count": 1000,
+            "min_max_diff": "1999 days, 0:00:00",
+            "parsed_success_rate": 1.0,
+            "samples": ["2022-06-01", "2021-10-31", "2020-08-12", "2022-09-22", "2022-12-19", "2023-08-31", "2023-03-15", "2020-11-13", "2023-03-11", "2022-02-03"],
+            "summary": "The launch_date column records the date when each product was launched, spanning from January 1, 2020, to June 22, 2025."
+        },
+        {
+            "column": "last_order",
+            "dtype": "String",
+            "type": "date-like string",
+            "min_date": "2023-01-02T00:00:00",
+            "max_date": "2025-09-24T00:00:00",
+            "null_count": 0,
+            "not_null_count": 1000,
+            "min_max_diff": "996 days, 0:00:00",
+            "parsed_success_rate": 0.963,
+            "samples": ["2024-03-01", "2024-01-28", "invalid-date", "2023-10-20", "2023-02-03", "2024-08-13", "2024-10-22", "2025-05-11", "2025-04-08", "2023-03-12"],
+            "summary": "The last_order column indicates the most recent order date for each product, with dates ranging from January 2, 2023, to September 24, 2025."
+        },
+        {
+            "column": "status",
+            "type": "categorical string",
+            "dtype": "String",
+            "categories": ["active", "discontinued", "inactive"],
+            "n_categories": 3,
+            "null_count": 0,
+            "not_null_count": 1000,
+            "samples": ["inactive", "inactive", "discontinued", "active", "discontinued", "inactive", "discontinued", "discontinued", "discontinued", "active"],
+            "summary": "The status column reflects the current state of each product, categorized as active, discontinued, or inactive."
+        }
+    ]
+}
