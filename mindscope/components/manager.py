@@ -8,6 +8,8 @@ import polars as pl
 
 from .core import EMPTY_DF
 from .utils.manager import get_dataframe_from_filepath
+from .summarizer import Summarizer
+
 
 # Errors
 
@@ -33,10 +35,39 @@ class Manager:
 
         Requires tabular format for now.
         """
-        if isinstance(data, pl.DataFrame) and not data.empty:
-            self.data = data
+        if isinstance(data, pl.DataFrame):
+            self._data = data
         elif filepath:
-            self.data = get_dataframe_from_filepath(filepath)
-            self.filepath = filepath
+            self._data = get_dataframe_from_filepath(filepath)
+            self._filepath = filepath
         else:
             raise ValueError("Either data or filepath must be provided.")
+        self._data = data
+        self._filepath = filepath
+        self.summarizer: Summarizer = None
+
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, value):
+        self._data = value
+
+    def summarize(self, n_samples=5, enrich=False):
+        """
+        Docstring will go here
+
+        :param: enrich
+        bool : Set true to use it for
+
+        """
+        if self.data.is_empty():
+            raise ValueError(
+                "Please provider data to summarize. Assign Manager a dataset."
+            )
+        if not self.summarizer:
+            self.summarizer = Summarizer(self.data)
+
+        summary = self.summarizer.summarize(n_samples=n_samples, enrich=enrich)
+        return summary
