@@ -6,6 +6,7 @@ from datetime import date
 import pytest
 import polars as pl
 from mindscope.components import Summarizer
+from dotenv import load_dotenv
 
 import logging
 
@@ -13,6 +14,9 @@ logging.basicConfig(
     level=logging.DEBUG,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
+logger = logging.getLogger(__name__)
+
+logger.info(f"Loaded ENV File : {load_dotenv()}")
 
 
 @pytest.fixture

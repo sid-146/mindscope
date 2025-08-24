@@ -1,9 +1,18 @@
 import copy
+import json
 import logging
 
 import polars as pl
 
-from .helper import try_parse_dates, try_generic_string_parse, try_categorical_parse
+from mindscope.components.models import LLMResponse, GenerationConfig, Summary
+from mindscope.components.llm import llm
+from .helper import (
+    try_parse_dates,
+    try_generic_string_parse,
+    try_categorical_parse,
+    datetime_serializer,
+)
+from .prompt_templates import ENRICH_SYSTEM_PROMPT, ENRICH_USER_PROMPT
 
 logger = logging.getLogger(__name__)
 
@@ -161,7 +170,36 @@ class Summarizer:
         return property_list
 
     def _enrich(self, summary: dict):
-        return summary
+        """
+        # Docstring will go here.
+
+        Todo:
+        - add feature to give custom input for enrich summary generator.
+        - Add response format validator.
+        - Add Generation Config handler.
+        """
+        llm_client = llm(provider="openai")
+        prompt = ENRICH_USER_PROMPT.format(
+            json.dumps(summary, default=datetime_serializer)
+        )
+        messages = [
+            {"role": "system", "content": ENRICH_SYSTEM_PROMPT},
+            {"role": "user", "content": prompt},
+        ]
+
+        gen_config = GenerationConfig(max_tokens=4028, temperature=0.2)
+        response: LLMResponse = llm_client.generate_text(
+            messages,
+            gen_config=gen_config,
+            # response_format=Summary,
+        )
+        content = (response.text[0].content).strip()
+        try:
+            content = json.loads(content)
+        except Exception as e:
+            print(f"Failed to parse to json, returning string. : {e}")
+        content = Summary(**content)
+        return content
 
     def summarize(self, n_samples=3, enrich=False):
         summary = copy.deepcopy(self.summary)
@@ -176,4 +214,5 @@ class Summarizer:
         if enrich:
             summary = self._enrich(summary)
 
+        self.summary = summary
         return summary

@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime, timedelta
 
 import polars as pl
 
@@ -72,3 +73,11 @@ def try_parse_dates(column_data: pl.Series, date_like_threshold: float):
             f"Failed to parse date column : {column_data.name} for reason : {e.__class__} : {e}"
         )
     return None
+
+
+def datetime_serializer(obj):
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    elif isinstance(obj, timedelta):
+        return str(obj)
+    raise TypeError(f"Object of type {obj.__class__.__name__} is not JSON serializable")
