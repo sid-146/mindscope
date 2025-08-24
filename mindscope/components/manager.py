@@ -9,8 +9,6 @@ from typing import Callable, Dict, Hashable
 
 import polars as pl
 
-# from llmx import TextGenerator, llm
-
 # types
 LoaderDict = Dict[Hashable, Callable[[], pl.DataFrame]]
 EMPTY_DF = pl.DataFrame()
