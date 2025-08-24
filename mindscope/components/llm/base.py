@@ -14,5 +14,5 @@ class BaseLLM(ABC):
     def generate_text():
         raise NotImplementedError("Base class should implement this method.")
 
-    def embed():
-        raise NotImplementedError("Base class should implement this method.")
+    # def embed():
+    #     raise NotImplementedError("Base class should implement this method.")
