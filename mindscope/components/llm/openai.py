@@ -1,5 +1,5 @@
 import os
-from typing import Dict, List
+from typing import Dict, List, Any
 
 from openai import OpenAI, AzureOpenAI
 from openai.types.chat import ChatCompletion
@@ -35,7 +35,8 @@ class OpenAIClient(BaseLLM):
         self.provider = provider
 
         super().__init__(provider=provider, model_name=model_name)
-        self.api_key = api_key or os.environ.get("OPENAI_API_KEY", None)
+
+        self.api_key = api_key if api_key else os.environ["OPENAI_API_KEY"]
 
         self.client_args = {
             "api_key": self.api_key,
@@ -44,9 +45,9 @@ class OpenAIClient(BaseLLM):
             "azure_endpoint": azure_endpoint,
         }
 
-        self.client_args = {k: v for k, v in self.client_args.items() if v is not None}
+        self.client_args = {k: v for k, v in self.client_args.items() if v}
 
-        if api_key is None:
+        if not self.api_key:
             raise ValueError(
                 "OpenAI key not set. Either pass pass to function or set environment variable `OPENAI_API_KEY` "
             )
@@ -94,12 +95,11 @@ class OpenAIClient(BaseLLM):
             "messages": messages,
         }
 
-        print(api_call_config)
         api_response: ChatCompletion = self.client.chat.completions.create(
             **api_call_config
         )
 
-        print(api_response)
+        # print(api_response)
 
         response = LLMResponse(
             text=[
@@ -114,5 +114,41 @@ class OpenAIClient(BaseLLM):
 
         # return "This is chat functison called."
 
-    def generate_text(self, prompt: str):
-        return "This is generate text function called"
+    def generate_text(
+        self,
+        prompt: List[Message],
+        gen_config: GenerationConfig = GenerationConfig(),
+        response_format: Any = None,
+    ) -> LLMResponse:
+        if gen_config.model_name is None:
+            gen_config = self._set_model(gen_config)
+
+        api_call_config = {
+            "model": gen_config.model_name,
+            "temperature": gen_config.temperature,
+            "max_tokens": gen_config.max_tokens,
+            "top_p": gen_config.top_p,
+            # "top_k": gen_config.top_k,
+            "messages": prompt,
+        }
+
+        if response_format is not None:
+            api_call_config["response_format"] = response_format
+            api_response: ChatCompletion = self.client.chat.completions.parse(
+                **api_call_config
+            )
+        else:
+            api_response: ChatCompletion = self.client.chat.completions.create(
+                **api_call_config
+            )
+
+        response = LLMResponse(
+            text=[
+                Message(**choice.message.model_dump())
+                for choice in api_response.choices
+            ],
+            config=gen_config,
+            usage=dict(api_response.usage),
+        )
+
+        return response
