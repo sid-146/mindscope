@@ -30,7 +30,7 @@ def get_dataframe_from_filepath(filepath: str, encoding: str = "utf-8"):
         message = f"Not able to read file : {e.__class__} : {e}"
         raise FileReadError(message)
 
-    if df.empty:
+    if df.is_empty():
         raise pl.errors.EmptyDataError("File loaded but no data found.")
 
     return df
