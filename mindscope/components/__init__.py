@@ -1,4 +1,4 @@
-from .summarizer.summarizer import Summarizer
+from .summarizer import Summarizer
 
 
 __all__ = ["Summarizer"]
