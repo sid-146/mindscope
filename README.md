@@ -44,11 +44,11 @@ persona = Persona(
 )
 
 # Analyze external data through the persona lens
-engine = Manager(data_path="data/retail_data.csv", persona=persona)
+manager = Manager(data_path="data/retail_data.csv", persona=persona)
 
 # Generate insights, summaries, and visual reports
-summary = engine.generate_summary()
-insights = engine.generate_insights()
+summary = manager.summarize()
+# insights = engine.generate_insights()
 engine.visualize()
 
 print(summary)
