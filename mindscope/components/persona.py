@@ -1,9 +1,10 @@
+from core import FileNotSupportedError
 from typing import List, Dict
+from .persona_helper import from_json
 
 
 class Persona:
-    def __init__(self, filepath):
-        self.filepath = filepath
+    def __init__(self):
         self._name: str = None
         self._description: str = None
         self._goals: List[str] = None
@@ -15,7 +16,7 @@ class Persona:
         self._trait: Dict[str, str] = None
 
     @property
-    def readable_file_formats(self):
+    def readable_file_formats():
         return ["json", "yaml"]
 
     @property
@@ -51,9 +52,27 @@ class Persona:
         self._pain_points = value
 
     @property
-    def preference(self):
+    def preferences(self):
         return self._preference
 
     @property.setter
-    def preference(self, value):
+    def preferences(self, value):
         self._preference = value
+
+    @staticmethod
+    def from_file_path(path: str):
+        extn = path.split(".")[-1]
+        if extn.lower() in Persona.readable_file_formats:
+            if extn.lower() == "json":
+                data: dict = from_json(path)
+        else:
+            raise FileNotSupportedError("Given file format is not supported.")
+        try:
+            persona = Persona()
+            persona.name = data.get("name")
+            persona.description = data.get("description")
+            persona.goals = data.get("goals")
+            persona.pain_points = data.get("pain_points")
+            persona.preferences = data.get("preferences")
+        except Exception as e:
+            raise e
