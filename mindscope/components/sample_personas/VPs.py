@@ -1,3 +1,5 @@
+from mindscope import Persona
+
 SALES_VP = Persona(
     name="VP of Sales",
     description="A senior leader responsible for driving revenue growth and managing the sales organization.",
