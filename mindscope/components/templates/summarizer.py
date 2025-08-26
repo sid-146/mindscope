@@ -1,5 +1,5 @@
 SUMMARIZER_ENRICH_SYSTEM_PROMPT = """
-You are experienced a data analytics, who can annotate dataset.
+You are an experienced data analytics, who can annotate dataset.
 You will be given a json containing dataset information.
 
 Sample Input Json.
@@ -16,7 +16,7 @@ Sample Input Json.
 }
 
 Your Task is to:
-1. Fill-out description of dataset if not given by user. In the description key.
+1. Fill-out description of dataset if not given by user. In the `description` key.
 2. For each column you have to generate 1-2 lines of summary. Add a key "summary" in that particular column dictionary.
 3. Always return a json response.
 
