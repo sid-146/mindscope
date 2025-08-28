@@ -1,7 +1,7 @@
 """
 Todo:
     - Update file structure
-    - move non class functions to their correct position
+    - Add logic to handle multiple persona: ps manager part is easy but how to handle goals and other feature for multiple persona is challenging thus skipping for now.
 """
 
 import polars as pl
@@ -9,9 +9,7 @@ import polars as pl
 from .core import EMPTY_DF
 from .utils.manager import get_dataframe_from_filepath
 from .summarizer import Summarizer
-
-
-# Errors
+from .persona import Persona
 
 
 class Manager:
@@ -24,12 +22,7 @@ class Manager:
         - Summarizer
     """
 
-    def __init__(
-        self,
-        data: pl.DataFrame = EMPTY_DF,
-        filepath: str = "",
-        # text_generator: TextGenerator = None,
-    ):
+    def __init__(self, data: pl.DataFrame = EMPTY_DF, filepath: str = ""):
         """
         Takes dataframe or file_path as argument if both given then dataframe will be prioritized.
 
@@ -45,6 +38,8 @@ class Manager:
         self._data = data
         self._filepath = filepath
         self.summarizer: Summarizer = None
+        self.persona: Persona = None
+        # self.personas: Dict[str, Persona] = None
 
     @property
     def data(self):
@@ -71,3 +66,25 @@ class Manager:
 
         summary = self.summarizer.summarize(n_samples=n_samples, enrich=enrich)
         return summary
+
+    def set_persona(self, persona: Persona) -> None:
+        """
+        Given persona.
+        """
+        if not persona.name:
+            raise AttributeError("Persona should have name.")
+
+        self.persona = persona
+
+        # if persona.name.lower() in self.personas.keys():
+        #     self.personas[persona.name.lower()] = persona
+        # else:
+        #     self.personas[persona.name.lower()] = persona
+
+    # def set_personas(self, personas: List[Persona]) -> None:
+    #     for persona in personas:
+    #         if not persona.name:
+    #             raise AttributeError("Persona name not found.")
+
+    #     update_dict = {persona.name: persona for persona in personas}
+    #     self.personas.update(update_dict)

@@ -1,2 +1,6 @@
-class FileReadError(BaseException):
+class FileReadError(Exception):
+    pass
+
+
+class FileNotSupportedError(Exception):
     pass

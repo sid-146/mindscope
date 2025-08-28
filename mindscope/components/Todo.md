@@ -1,2 +1,3 @@
 - Figure out where to api keys and environment variables
 - Should we make this to change the provider on the go type? Like user can use provider 1 for first request and change output on other on?
+- To migrate to LLMLite (to handle multiple provider, rather than coding it yourself completely.)
