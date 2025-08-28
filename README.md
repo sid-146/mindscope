@@ -49,7 +49,7 @@ manager = Manager(data_path="data/retail_data.csv", persona=persona)
 # Generate insights, summaries, and visual reports
 summary = manager.summarize()
 # insights = engine.generate_insights()
-engine.visualize()
+manager.visualize()
 
 print(summary)
 ```
