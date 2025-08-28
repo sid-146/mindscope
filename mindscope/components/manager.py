@@ -4,8 +4,6 @@ Todo:
     - Add logic to handle multiple persona: ps manager part is easy but how to handle goals and other feature for multiple persona is challenging thus skipping for now.
 """
 
-from typing import Dict, List
-
 import polars as pl
 
 from .core import EMPTY_DF
@@ -74,7 +72,7 @@ class Manager:
         Given persona.
         """
         if not persona.name:
-            raise AttirbuteError("Persona should have name.")
+            raise AttributeError("Persona should have name.")
 
         self.persona = persona
 
