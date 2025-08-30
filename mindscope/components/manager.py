@@ -4,12 +4,16 @@ Todo:
     - Add logic to handle multiple persona: ps manager part is easy but how to handle goals and other feature for multiple persona is challenging thus skipping for now.
 """
 
+from typing import List
+
 import polars as pl
 
 from .core import EMPTY_DF
 from .utils.manager import get_dataframe_from_filepath
 from .summarizer import Summarizer
 from .persona import Persona
+from .metrics import MetricsHandler
+from .models import MetricModel
 
 
 class Manager:
@@ -28,6 +32,8 @@ class Manager:
 
         Requires tabular format for now.
         """
+        # Todo: Add handling for multiple persona.
+
         if isinstance(data, pl.DataFrame):
             self._data = data
         elif filepath:
@@ -39,6 +45,7 @@ class Manager:
         self._filepath = filepath
         self.summarizer: Summarizer = None
         self.persona: Persona = None
+        self.metrics_handler: MetricsHandler = None
         # self.personas: Dict[str, Persona] = None
 
     @property
@@ -88,3 +95,21 @@ class Manager:
 
     #     update_dict = {persona.name: persona for persona in personas}
     #     self.personas.update(update_dict)
+
+    def generate_metrics(self, no_of_metrics: int = 5) -> List[MetricModel]:
+        """
+        Generates metrics using Summary and persona associated with this manager.
+        """
+        if "columns" not in self.summarizer.summary:
+            raise ValueError("Summarizer must be called before generating metrics.")
+
+        if not (self.persona and self.persona.description):
+            raise ValueError(
+                "Persona should be created and description should be added to persona before generating metrics."
+            )
+
+        if not self.metrics_handler:
+            self.metrics_handler = MetricsHandler(self.summarizer.summary, self.persona)
+
+        self.metrics_handler.generate_metrics(no_of_metrics)
+        return self.metrics_handler.metrics
