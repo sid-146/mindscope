@@ -2,67 +2,49 @@
 File to generate metrics according to persona.
 """
 
+from typing import Dict, List
+
 from .models import MetricModel
+from .persona import Persona
+from .llm import llm
+
+"""
+What can be done
+Metric versioning.
+"""
 
 
-class Metric:
-    def __init__(self, metric: MetricModel):
-        self._metric = metric
-        self._name = metric.name
-        self._definition = metric.definition
-        self._importance = metric.importance
-        self._formula = metric.formula
-        self._steps = metric.steps
-        self._code_string = metric.code_string
-
-    @property
-    def name(self):
-        return self._name
-
-    @name.setter
-    def name(self, value):
-        self._metric.name = value
-        self._name = value
+class MetricsHandler:
+    def __init__(self, summary: dict, persona: Persona):
+        self._metrics: Dict[str, MetricModel] = {}
 
     @property
-    def definition(self):
-        return self._definition
-
-    @definition.setter
-    def definition(self, value):
-        self._metric.definition = value
-        self._definition = value
+    def metrics_count(self):
+        return len(self.metrics)
 
     @property
-    def importance(self):
-        return self._importance
-
-    @importance.setter
-    def importance(self, value):
-        self._metric.importance = value
-        self._importance = value
+    def metrics(self) -> List[MetricModel]:
+        return list(self._metrics.values())
 
     @property
-    def formula(self):
-        return self._formula
+    def metrics_names(self) -> List[str]:
+        return list(self._metrics.keys())
 
-    @formula.setter
-    def formula(self, value):
-        self._metric.formula = value
-        self._formula = value
-
-    @property
-    def calculation_steps(self):
-        return self._steps
-
-    def update_definition_using_instruction(self, instruction):
+    def generate_metrics(self, summary, persona, no_of_metrics: int = 5):
         """
-        Function takes instruction and updates the metric definition and other attributes.
-
-        :params:
-        instruction: str
+        Generate metrics according to persona, and summary
         """
-        # Todo
-        # call llm with instruction to update metric definition
-        # Do we need to update all the attributes
+        # Todo: Call llm and ask to generate given number of metric, for summary and persona
+        llm_client = llm(provider="openai")
+        prompt = []
+
+        return
+
+    def update_definition(self, metric_name: str, instruction: str):
+        if metric_name not in self._metrics:
+            raise KeyError("Given metric not found in the current metric list.")
+
+        metric: MetricModel = self._metrics[metric_name]
+
+        # Todo: Call llm and ask to update metric using given instruction
         return
