@@ -12,7 +12,7 @@ from .utils.summarizer import (
     try_categorical_parse,
     datetime_serializer,
 )
-from .templates.summarizer import SUMMARIZER_ENRICH_SYSTEM_PROMPT, SUMMARIZER_USER_PROMPT
+from .prompts.summarizer import SUMMARIZER_ENRICH_SYSTEM_PROMPT, SUMMARIZER_USER_PROMPT
 
 logger = logging.getLogger(__name__)
 
