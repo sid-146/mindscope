@@ -1,6 +1,6 @@
 """
 Todo:
-    - Update file structure
+    - Update file structure : Done
     - Add logic to handle multiple persona: ps manager part is easy but how to handle goals and other feature for multiple persona is challenging thus skipping for now.
 """
 
