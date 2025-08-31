@@ -95,6 +95,7 @@ class OpenAIClient(BaseLLM):
             "messages": messages,
         }
 
+        # Review: Chat completion needs to maintain chat history, should we move to responses api
         api_response: ChatCompletion = self.client.chat.completions.create(
             **api_call_config
         )
