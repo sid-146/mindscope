@@ -144,6 +144,7 @@ class OpenAIClient(BaseLLM):
             )
 
         response = LLMResponse(
+            # using message here as it dynamically checks for response model.
             text=[
                 Message(**choice.message.model_dump())
                 for choice in api_response.choices
